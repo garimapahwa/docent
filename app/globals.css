@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+/* Web UI is light. The video keeps its own dark palette (defined separately with the composition).
+   Success/failure are darkened from the video values so they stay readable on white. */
+@theme inline {
+  --color-bg: #ffffff;
+  --color-surface: #f6f6f8;
+  --color-border: #e6e6eb;
+  --color-fg: #0b0b0f;
+  --color-muted: #6b6b78;
+  --color-accent: #9945ff;
+  --color-success: #0a9d5c;
+  --color-failure: #e5484d;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+}
+
+::selection {
+  background: var(--color-accent);
+  color: white;
+}
+
+/* Same entrance language as the video: fade + slide up 20px, staggered. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes hop {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-8px);
+  }
+}
+.hop {
+  animation: hop 0.9s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-8px);
+  }
+  40%, 80% {
+    transform: translateX(8px);
+  }
+}
+.shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+.blink {
+  animation: blink 1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .hop, .shake, .blink {
+    animation: none;
+  }
+}

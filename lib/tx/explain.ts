@@ -1,0 +1,235 @@
+import { formatUnits, shortAddress } from "@/lib/format";
+import { COMPUTE_BUDGET_PROGRAM_ID, SYSTEM_PROGRAM_ID, isTokenProgram, tokenLabel } from "@/lib/solana/known";
+import type { TopLevelInstruction, Transfer, TxModel } from "@/lib/tx/model";
+
+/**
+ * Plain-English explanation of a TxModel, built only from facts in the model.
+ * Deterministic: the same transaction always gives the same text.
+ */
+export type ExplainedStep = {
+  text: string;
+  /** Sub-steps, e.g. the individual swaps inside a Jupiter route. */
+  details: string[];
+  failed: boolean;
+};
+
+export type Explanation = {
+  headline: string;
+  steps: ExplainedStep[];
+  outcome: string;
+};
+
+const WRAPPED_SOL_MINT = "So11111111111111111111111111111111111111112";
+
+const PROGRAM_BLURBS: Record<string, string> = {
+  Jupiter: "a trading router that finds the best price across exchanges",
+  "Orca Whirlpool": "an exchange",
+  "Raydium AMM": "an exchange",
+  "Raydium CLMM": "an exchange",
+};
+
+/** Readable amount: keeps up to 4 decimals (6 significant digits below 1). Display only. */
+export function displayAmount(amount: string): string {
+  const n = Math.abs(Number(amount));
+  if (!Number.isFinite(n)) return amount;
+  const opts: Intl.NumberFormatOptions =
+    n >= 1 ? { maximumFractionDigits: 4 } : { maximumSignificantDigits: 6 };
+  return n.toLocaleString("en-US", opts);
+}
+
+const money = (t: Pick<Transfer, "amount" | "symbol">) => `${displayAmount(t.amount)} ${t.symbol}`;
+
+function venueName(name: string | null, id: string | null): string {
+  if (!name || !id) return "an unknown program";
+  return name === shortAddress(id) ? `an unlabelled exchange (${name})` : name;
+}
+
+/** Per-token totals the wallet sent to and received from others (own-account moves excluded). */
+export type TokenFlow = {
+  mint: string | null;
+  symbol: string;
+  symbolKnown: boolean;
+  decimals: number | null;
+  sent: bigint;
+  received: bigint;
+};
+
+export function walletFlows(tx: TxModel, wallet: string = tx.feePayer): TokenFlow[] {
+  const flows = new Map<string, TokenFlow>();
+  for (const t of tx.transfers) {
+    const out = t.fromOwner === wallet && t.toOwner !== wallet;
+    const into = t.toOwner === wallet && t.fromOwner !== wallet;
+    if (!out && !into) continue;
+    const key = t.mint ?? "native-sol";
+    const flow = flows.get(key) ?? {
+      mint: t.mint,
+      symbol: t.symbol,
+      symbolKnown: t.symbolKnown,
+      decimals: t.decimals,
+      sent: 0n,
+      received: 0n,
+    };
+    if (out) flow.sent += BigInt(t.rawAmount);
+    else flow.received += BigInt(t.rawAmount);
+    flows.set(key, flow);
+  }
+  return [...flows.values()];
+}
+
+function amountOf(flow: TokenFlow, raw: bigint): string {
+  const abs = raw < 0n ? -raw : raw;
+  const text = flow.decimals === null ? abs.toString() : formatUnits(abs, flow.decimals);
+  return `${displayAmount(text)} ${flow.symbol}`;
+}
+
+function list(parts: string[]): string {
+  if (parts.length <= 2) return parts.join(" and ");
+  return `${parts.slice(0, 2).join(", ")} and ${parts.length - 2} more`;
+}
+
+/**
+ * Headline from net totals, so split routes (one token → two trades → same token) add up
+ * correctly. Tokens that pass through the wallet and net to zero are left out.
+ */
+/** One-line summary of what the transaction did for `wallet` (default: the wallet that sent it). */
+export function headline(tx: TxModel, wallet: string = tx.feePayer): string {
+  const flows = walletFlows(tx, wallet);
+  const sent = flows.filter((f) => f.received < f.sent);
+  const got = flows.filter((f) => f.received > f.sent);
+
+  if (sent.length > 0 && got.length > 0) {
+    const s = list(sent.map((f) => amountOf(f, f.sent - f.received)));
+    const g = list(got.map((f) => amountOf(f, f.received - f.sent)));
+    return tx.success ? `Swapped ${s} for ${g}` : `Tried to swap ${s} for ${g}, but it was cancelled`;
+  }
+
+  // Same token out and back in: a loop (typical of trading bots).
+  const loop = flows.find((f) => f.sent > 0n && f.received > 0n && f.sent !== f.received);
+  if (loop) {
+    return tx.success
+      ? `Traded ${loop.symbol} in a loop: put in ${amountOf(loop, loop.sent)}, got back ${amountOf(loop, loop.received)}`
+      : `Tried to trade ${amountOf(loop, loop.sent)} in a loop back to ${loop.symbol}, but it was cancelled`;
+  }
+
+  if (sent.length > 0) {
+    const s = list(sent.map((f) => amountOf(f, f.sent - f.received)));
+    return `${tx.success ? "Sent" : "Tried to send"} ${s}`;
+  }
+  if (got.length > 0) {
+    const g = list(got.map((f) => amountOf(f, f.received - f.sent)));
+    return `${tx.success ? "Received" : "Tried to receive"} ${g}`;
+  }
+  return tx.success ? "Ran programs without moving any tokens" : "A transaction that failed";
+}
+
+/** Swaps inside a router instruction: transfers grouped by the exchange that made them. */
+function venueSwaps(ix: TopLevelInstruction, transfers: Transfer[], payer: string): string[] {
+  const groups = new Map<string, Transfer[]>();
+  for (const t of transfers) {
+    if (t.index !== ix.index || !t.viaProgramId || t.viaProgramId === ix.programId) continue;
+    const list = groups.get(t.viaProgramId) ?? [];
+    list.push(t);
+    groups.set(t.viaProgramId, list);
+  }
+  const lines: string[] = [];
+  for (const list of groups.values()) {
+    // Some exchanges pay out before collecting, so prefer ownership over order:
+    // what the wallet sent is the input, what it received is the output.
+    const first = list.find((t) => t.fromOwner === payer) ?? list[0];
+    const last = list.find((t) => t.toOwner === payer && t !== first) ?? list[list.length - 1];
+    const venue = venueName(first.viaProgramName, first.viaProgramId);
+    lines.push(
+      list.length >= 2 && first.symbol !== last.symbol
+        ? `Swapped ${money(first)} for ${money(last)} on ${venue}`
+        : `Moved ${money(first)} through ${venue}`,
+    );
+  }
+  return lines;
+}
+
+function describe(ix: TopLevelInstruction, tx: TxModel): Omit<ExplainedStep, "failed"> {
+  const info = ix.info ?? {};
+  const str = (k: string) => (typeof info[k] === "string" ? (info[k] as string) : null);
+
+  if (ix.programId === SYSTEM_PROGRAM_ID) {
+    if (ix.type === "advanceNonce")
+      return { text: "Used a durable nonce, a pre-signed ticket that lets a transaction be sent later", details: [] };
+    if (ix.type === "transfer") {
+      const t = tx.transfers.find((x) => x.index === ix.index && x.innerIndex === null);
+      if (t) return { text: `Sent ${money(t)} to ${shortAddress(t.to)}`, details: [] };
+    }
+    if (ix.type === "createAccount") return { text: "Created a new account", details: [] };
+  }
+
+  if (ix.programId === "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL") {
+    const mint = str("mint");
+    const symbol =
+      mint === WRAPPED_SOL_MINT ? "wrapped SOL (SOL in token form)" : mint ? tokenLabel(mint).symbol : "token";
+    return {
+      text: `Made sure the wallet has a ${symbol} account, a separate balance it needs for each token`,
+      details: [],
+    };
+  }
+
+  if (isTokenProgram(ix.programId)) {
+    if (ix.type === "closeAccount")
+      return { text: "Closed a temporary token account and got its small SOL deposit back", details: [] };
+    if (ix.type === "syncNative") return { text: "Updated the wallet's wrapped SOL balance", details: [] };
+    const t = tx.transfers.find((x) => x.index === ix.index && x.innerIndex === null);
+    if (t) {
+      const internal = t.fromOwner === t.toOwner && t.fromOwner !== null;
+      return {
+        text: internal
+          ? `Moved ${money(t)} between two of the wallet's own accounts`
+          : `Sent ${money(t)} to ${shortAddress(t.toOwner ?? t.to)}`,
+        details: [],
+      };
+    }
+  }
+
+  if (ix.programId === "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr" && str("memo")) {
+    return { text: `Attached a note: “${str("memo")}”`, details: [] };
+  }
+
+  const swaps = venueSwaps(ix, tx.transfers, tx.feePayer);
+  const blurb = PROGRAM_BLURBS[ix.programName];
+  const who = blurb ? `${ix.programName} (${blurb})` : ix.programName;
+  if (swaps.length > 0) {
+    return { text: `Asked ${who} to make a trade${swaps.length > 1 ? ` using ${swaps.length} swaps` : ""}`, details: swaps };
+  }
+  return { text: `Ran ${who}${ix.programKnown ? "" : ", a program without a known name"}`, details: [] };
+}
+
+export function explainTransaction(tx: TxModel): Explanation {
+  const steps: ExplainedStep[] = [];
+  const failedIndex = tx.failure?.instructionIndex ?? null;
+
+  // Compute Budget instructions are bookkeeping; fold them into one line.
+  const budget = tx.instructions.filter((ix) => ix.programId === COMPUTE_BUDGET_PROGRAM_ID);
+  if (budget.length > 0) {
+    const limit = budget.find((ix) => ix.type === "setComputeUnitLimit")?.info?.units;
+    const tip = budget.some((ix) => ix.type === "setComputeUnitPrice");
+    const parts = [
+      typeof limit === "number" ? `set a computing budget of ${limit.toLocaleString("en-US")} units` : "set its computing budget",
+      tip ? "added a priority tip so it gets processed sooner" : null,
+    ].filter(Boolean);
+    const text = parts.join(" and ");
+    steps.push({ text: text.charAt(0).toUpperCase() + text.slice(1), details: [], failed: false });
+  }
+
+  for (const ix of tx.instructions) {
+    if (ix.programId === COMPUTE_BUDGET_PROGRAM_ID) continue;
+    if (failedIndex !== null && ix.index > failedIndex) break;
+    steps.push({ ...describe(ix, tx), failed: ix.index === failedIndex });
+  }
+
+  const reason =
+    tx.failure?.errorName === "SlippageToleranceExceeded"
+      ? "prices moved, so the trade would have returned less than the minimum the wallet agreed to accept."
+      : (tx.failure?.description ?? "an error occurred.");
+  const outcome = tx.success
+    ? `Everything worked. The wallet paid a network fee of ${tx.feeSol} SOL.`
+    : `Then it stopped: ${reason} Solana undid every step, so nothing moved except the ${tx.feeSol} SOL fee.`;
+
+  return { headline: headline(tx), steps, outcome };
+}

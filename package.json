@@ -1,0 +1,38 @@
+{
+  "name": "docent",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "inspect": "tsx scripts/inspect-tx.ts",
+    "recent": "tsx scripts/recent-sigs.ts",
+    "explain": "tsx scripts/explain-fixtures.ts",
+    "wallet": "tsx scripts/wallet-summary.ts",
+    "verify": "tsx scripts/verify.ts"
+  },
+  "dependencies": {
+    "@remotion/google-fonts": "^4.0.529",
+    "@remotion/media-utils": "^4.0.529",
+    "@remotion/player": "^4.0.529",
+    "@solana/web3.js": "^1.98.0",
+    "next": "^15.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "remotion": "^4.0.529",
+    "server-only": "^0.0.1",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@remotion/cli": "^4.0.529",
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "tailwindcss": "^4.1.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.0"
+  }
+}

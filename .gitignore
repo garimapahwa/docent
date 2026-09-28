@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.DS_Store
+.vercel
+.claude/
+
+# Secrets stay local; .env.example is the shareable template.
+.env*
+!.env.example
+
+# One-off test output
+fixtures/check-*.json

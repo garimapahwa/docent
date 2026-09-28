@@ -1,0 +1,494 @@
+{
+  "signature": "5XWtW871ig9SerqcywPLqCwJqiUTCxNJkc77RyP7TiXxwJRTrQqnzFz1Ps4QV5SLMSst8Ar3J8PrqR257VA1V4Gr",
+  "slot": 450374289,
+  "blockTime": 1790345072,
+  "blockTimeIso": "2026-09-25T14:04:32.000Z",
+  "version": 0,
+  "success": false,
+  "feePayer": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV",
+  "feeLamports": 20932,
+  "feeSol": "0.000020932",
+  "computeUnitsConsumed": 96394,
+  "accounts": [
+    {
+      "address": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV",
+      "signer": true,
+      "writable": true,
+      "isFeePayer": true
+    },
+    {
+      "address": "5brKFZh1GkkEo6ofb4uRhC9wfMVw1NWfYFjXKFYsJbrc",
+      "signer": false,
+      "writable": true,
+      "isFeePayer": false
+    },
+    {
+      "address": "8ncU5YW1CQwvr4gs7buH57bW58e86TDau4STrCJBuz8z",
+      "signer": false,
+      "writable": true,
+      "isFeePayer": false
+    },
+    {
+      "address": "BU8L8F49PaquzBCearokmTmHu49cFcAt7TvGxERnhbQX",
+      "signer": false,
+      "writable": true,
+      "isFeePayer": false
+    },
+    {
+      "address": "EunHLeqeJKvxnCPQSytnBP63HJVk2fbHceiKKpngyAo8",
+      "signer": false,
+      "writable": true,
+      "isFeePayer": false
+    },
+    {
+      "address": "GMCJvYGf5Ex2ARiMquaBDqU6iKM8uiEQkB8jCnoNfHpC",
+      "signer": false,
+      "writable": true,
+      "isFeePayer": false
+    },
+    {
+      "address": "11111111111111111111111111111111",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    },
+    {
+      "address": "ComputeBudget111111111111111111111111111111",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    },
+    {
+      "address": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    },
+    {
+      "address": "So11111111111111111111111111111111111111112",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    },
+    {
+      "address": "Sysvar1nstructions1111111111111111111111111",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    },
+    {
+      "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    },
+    {
+      "address": "goonuddtQRrWqqn5nFyczVKaie28f3kDkHWkHtURSLE",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    },
+    {
+      "address": "jitodontfront11111111111JustUseJupiterU1tra",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    },
+    {
+      "address": "7yecFG22heommABQ5svcbQLK1Ua4ZrJsHPiktZ17jfm3",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    },
+    {
+      "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    },
+    {
+      "address": "BNrK9LpEn65QA4TyBLVSMdngW3XHj3xLfFPwGdCBv8wV",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    },
+    {
+      "address": "D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    },
+    {
+      "address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    },
+    {
+      "address": "J1to1yufRnoWn81KYg1XkTWzmKjnYSnmE2VY8DGUJ9Qv",
+      "signer": false,
+      "writable": false,
+      "isFeePayer": false
+    }
+  ],
+  "instructions": [
+    {
+      "index": 0,
+      "innerIndex": null,
+      "stackHeight": 1,
+      "programId": "ComputeBudget111111111111111111111111111111",
+      "programName": "Compute Budget",
+      "programKnown": true,
+      "type": "setComputeUnitLimit",
+      "typeSource": "decoded",
+      "info": {
+        "units": 121960
+      },
+      "accounts": [],
+      "inner": []
+    },
+    {
+      "index": 1,
+      "innerIndex": null,
+      "stackHeight": 1,
+      "programId": "ComputeBudget111111111111111111111111111111",
+      "programName": "Compute Budget",
+      "programKnown": true,
+      "type": "setComputeUnitPrice",
+      "typeSource": "decoded",
+      "info": {
+        "microLamports": "130632"
+      },
+      "accounts": [],
+      "inner": []
+    },
+    {
+      "index": 2,
+      "innerIndex": null,
+      "stackHeight": 1,
+      "programId": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+      "programName": "Associated Token Account Program",
+      "programKnown": true,
+      "type": "createIdempotent",
+      "typeSource": "parsed",
+      "info": {
+        "account": "BU8L8F49PaquzBCearokmTmHu49cFcAt7TvGxERnhbQX",
+        "mint": "So11111111111111111111111111111111111111112",
+        "source": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV",
+        "systemProgram": "11111111111111111111111111111111",
+        "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "wallet": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV"
+      },
+      "accounts": [],
+      "inner": [
+        {
+          "index": 2,
+          "innerIndex": 0,
+          "stackHeight": 2,
+          "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "programName": "Token Program",
+          "programKnown": true,
+          "type": "getAccountDataSize",
+          "typeSource": "parsed",
+          "info": {
+            "extensionTypes": [
+              "immutableOwner"
+            ],
+            "mint": "So11111111111111111111111111111111111111112"
+          },
+          "accounts": []
+        },
+        {
+          "index": 2,
+          "innerIndex": 1,
+          "stackHeight": 2,
+          "programId": "11111111111111111111111111111111",
+          "programName": "System Program",
+          "programKnown": true,
+          "type": "createAccount",
+          "typeSource": "parsed",
+          "info": {
+            "lamports": 1488440,
+            "newAccount": "BU8L8F49PaquzBCearokmTmHu49cFcAt7TvGxERnhbQX",
+            "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "source": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV",
+            "space": 165
+          },
+          "accounts": []
+        },
+        {
+          "index": 2,
+          "innerIndex": 2,
+          "stackHeight": 2,
+          "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "programName": "Token Program",
+          "programKnown": true,
+          "type": "initializeImmutableOwner",
+          "typeSource": "parsed",
+          "info": {
+            "account": "BU8L8F49PaquzBCearokmTmHu49cFcAt7TvGxERnhbQX"
+          },
+          "accounts": []
+        },
+        {
+          "index": 2,
+          "innerIndex": 3,
+          "stackHeight": 2,
+          "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "programName": "Token Program",
+          "programKnown": true,
+          "type": "initializeAccount3",
+          "typeSource": "parsed",
+          "info": {
+            "account": "BU8L8F49PaquzBCearokmTmHu49cFcAt7TvGxERnhbQX",
+            "mint": "So11111111111111111111111111111111111111112",
+            "owner": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV"
+          },
+          "accounts": []
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "innerIndex": null,
+      "stackHeight": 1,
+      "programId": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+      "programName": "Jupiter",
+      "programKnown": true,
+      "type": "RouteV2",
+      "typeSource": "log",
+      "info": null,
+      "accounts": [
+        "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV",
+        "5brKFZh1GkkEo6ofb4uRhC9wfMVw1NWfYFjXKFYsJbrc",
+        "BU8L8F49PaquzBCearokmTmHu49cFcAt7TvGxERnhbQX",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "So11111111111111111111111111111111111111112",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+        "D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf",
+        "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+        "goonuddtQRrWqqn5nFyczVKaie28f3kDkHWkHtURSLE",
+        "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV",
+        "GMCJvYGf5Ex2ARiMquaBDqU6iKM8uiEQkB8jCnoNfHpC",
+        "BU8L8F49PaquzBCearokmTmHu49cFcAt7TvGxERnhbQX",
+        "5brKFZh1GkkEo6ofb4uRhC9wfMVw1NWfYFjXKFYsJbrc",
+        "8ncU5YW1CQwvr4gs7buH57bW58e86TDau4STrCJBuz8z",
+        "EunHLeqeJKvxnCPQSytnBP63HJVk2fbHceiKKpngyAo8",
+        "So11111111111111111111111111111111111111112",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "7yecFG22heommABQ5svcbQLK1Ua4ZrJsHPiktZ17jfm3",
+        "BNrK9LpEn65QA4TyBLVSMdngW3XHj3xLfFPwGdCBv8wV",
+        "Sysvar1nstructions1111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "J1to1yufRnoWn81KYg1XkTWzmKjnYSnmE2VY8DGUJ9Qv",
+        "jitodontfront11111111111JustUseJupiterU1tra"
+      ],
+      "inner": [
+        {
+          "index": 3,
+          "innerIndex": 0,
+          "stackHeight": 2,
+          "programId": "goonuddtQRrWqqn5nFyczVKaie28f3kDkHWkHtURSLE",
+          "programName": "goon…RSLE",
+          "programKnown": false,
+          "type": null,
+          "typeSource": null,
+          "info": null,
+          "accounts": [
+            "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV",
+            "GMCJvYGf5Ex2ARiMquaBDqU6iKM8uiEQkB8jCnoNfHpC",
+            "BU8L8F49PaquzBCearokmTmHu49cFcAt7TvGxERnhbQX",
+            "5brKFZh1GkkEo6ofb4uRhC9wfMVw1NWfYFjXKFYsJbrc",
+            "8ncU5YW1CQwvr4gs7buH57bW58e86TDau4STrCJBuz8z",
+            "EunHLeqeJKvxnCPQSytnBP63HJVk2fbHceiKKpngyAo8",
+            "So11111111111111111111111111111111111111112",
+            "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            "7yecFG22heommABQ5svcbQLK1Ua4ZrJsHPiktZ17jfm3",
+            "BNrK9LpEn65QA4TyBLVSMdngW3XHj3xLfFPwGdCBv8wV",
+            "Sysvar1nstructions1111111111111111111111111",
+            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "J1to1yufRnoWn81KYg1XkTWzmKjnYSnmE2VY8DGUJ9Qv"
+          ]
+        },
+        {
+          "index": 3,
+          "innerIndex": 1,
+          "stackHeight": 3,
+          "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "programName": "Token Program",
+          "programKnown": true,
+          "type": "transfer",
+          "typeSource": "parsed",
+          "info": {
+            "amount": "1000100010",
+            "authority": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV",
+            "destination": "EunHLeqeJKvxnCPQSytnBP63HJVk2fbHceiKKpngyAo8",
+            "source": "5brKFZh1GkkEo6ofb4uRhC9wfMVw1NWfYFjXKFYsJbrc"
+          },
+          "accounts": []
+        },
+        {
+          "index": 3,
+          "innerIndex": 2,
+          "stackHeight": 3,
+          "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "programName": "Token Program",
+          "programKnown": true,
+          "type": "transfer",
+          "typeSource": "parsed",
+          "info": {
+            "amount": "8407631301",
+            "authority": "GMCJvYGf5Ex2ARiMquaBDqU6iKM8uiEQkB8jCnoNfHpC",
+            "destination": "BU8L8F49PaquzBCearokmTmHu49cFcAt7TvGxERnhbQX",
+            "source": "8ncU5YW1CQwvr4gs7buH57bW58e86TDau4STrCJBuz8z"
+          },
+          "accounts": []
+        },
+        {
+          "index": 3,
+          "innerIndex": 3,
+          "stackHeight": 2,
+          "programId": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+          "programName": "Jupiter",
+          "programKnown": true,
+          "type": null,
+          "typeSource": null,
+          "info": null,
+          "accounts": [
+            "D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf"
+          ]
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "innerIndex": null,
+      "stackHeight": 1,
+      "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "programName": "Token Program",
+      "programKnown": true,
+      "type": "closeAccount",
+      "typeSource": "parsed",
+      "info": {
+        "account": "BU8L8F49PaquzBCearokmTmHu49cFcAt7TvGxERnhbQX",
+        "destination": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV",
+        "owner": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV"
+      },
+      "accounts": [],
+      "inner": []
+    }
+  ],
+  "solChanges": [
+    {
+      "address": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV",
+      "isFeePayer": true,
+      "pre": "1073.489486212",
+      "post": "1073.48946528",
+      "delta": "-0.000020932"
+    }
+  ],
+  "tokenChanges": [],
+  "transfers": [
+    {
+      "index": 3,
+      "innerIndex": 1,
+      "kind": "token",
+      "from": "5brKFZh1GkkEo6ofb4uRhC9wfMVw1NWfYFjXKFYsJbrc",
+      "to": "EunHLeqeJKvxnCPQSytnBP63HJVk2fbHceiKKpngyAo8",
+      "viaProgramId": "goonuddtQRrWqqn5nFyczVKaie28f3kDkHWkHtURSLE",
+      "viaProgramName": "goon…RSLE",
+      "fromOwner": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV",
+      "toOwner": "GMCJvYGf5Ex2ARiMquaBDqU6iKM8uiEQkB8jCnoNfHpC",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "symbol": "USDC",
+      "symbolKnown": true,
+      "decimals": 6,
+      "amount": "1000.10001",
+      "rawAmount": "1000100010",
+      "involvesFeePayer": true,
+      "reverted": true
+    },
+    {
+      "index": 3,
+      "innerIndex": 2,
+      "kind": "token",
+      "from": "8ncU5YW1CQwvr4gs7buH57bW58e86TDau4STrCJBuz8z",
+      "to": "BU8L8F49PaquzBCearokmTmHu49cFcAt7TvGxERnhbQX",
+      "viaProgramId": "goonuddtQRrWqqn5nFyczVKaie28f3kDkHWkHtURSLE",
+      "viaProgramName": "goon…RSLE",
+      "fromOwner": "GMCJvYGf5Ex2ARiMquaBDqU6iKM8uiEQkB8jCnoNfHpC",
+      "toOwner": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV",
+      "mint": "So11111111111111111111111111111111111111112",
+      "symbol": "SOL",
+      "symbolKnown": true,
+      "decimals": 9,
+      "amount": "8.407631301",
+      "rawAmount": "8407631301",
+      "involvesFeePayer": true,
+      "reverted": true
+    }
+  ],
+  "logs": [
+    "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+    "Program ComputeBudget111111111111111111111111111111 success",
+    "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+    "Program ComputeBudget111111111111111111111111111111 success",
+    "Program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL invoke [1]",
+    "Program log: CreateIdempotent",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 179 of 116309 compute units",
+    "Program return: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA pQAAAAAAAAA=",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+    "Program 11111111111111111111111111111111 invoke [2]",
+    "Program 11111111111111111111111111111111 success",
+    "Program log: Initialize the associated token account",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 37 of 111220 compute units",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 229 of 108759 compute units",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+    "Program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL consumed 13413 of 121660 compute units",
+    "Program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL success",
+    "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [1]",
+    "Program log: Instruction: RouteV2",
+    "Program goonuddtQRrWqqn5nFyczVKaie28f3kDkHWkHtURSLE invoke [2]",
+    "Program log: 000000001acbe25a-00000001effa6f54-0000000000000000-33",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [3]",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 76 of 64715 compute units",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [3]",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 83 of 63336 compute units",
+    "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+    "Program goonuddtQRrWqqn5nFyczVKaie28f3kDkHWkHtURSLE consumed 72853 of 101032 compute units",
+    "Program goonuddtQRrWqqn5nFyczVKaie28f3kDkHWkHtURSLE success",
+    "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [2]",
+    "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 consumed 106 of 26186 compute units",
+    "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 success",
+    "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 consumed 82681 of 108247 compute units",
+    "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 failed: custom program error: 0x1771"
+  ],
+  "failure": {
+    "instructionIndex": 3,
+    "programId": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+    "programName": "Jupiter",
+    "errorName": "SlippageToleranceExceeded",
+    "code": 6001,
+    "codeHex": "0x1771",
+    "isProgramSpecific": true,
+    "description": "Slippage tolerance exceeded: the swap would have returned less than the minimum amount allowed, so it was cancelled. This error is defined by Jupiter.",
+    "logLine": "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 failed: custom program error: 0x1771",
+    "raw": {
+      "InstructionError": [
+        3,
+        {
+          "Custom": 6001
+        }
+      ]
+    }
+  }
+}
