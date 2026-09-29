@@ -168,9 +168,17 @@ function checkSol(tx: TxModel, h: HeliusTx): string[] {
  * Verified against raw RPC data for 4j4iNeQC…: the exact change is Docent's value.
  */
 let roundingNotes = 0;
-function heliusRounding(a: bigint, b: bigint): boolean {
-  if (b === 0n) return false;
-  if (Math.abs(Number(a - b)) <= Math.abs(Number(b)) * 1e-12) {
+/**
+ * `balance` is the largest raw balance involved. A float carries ~15-16 significant digits, so
+ * once a balance passes 2^53 its last digit or two can be off; allow exactly that much.
+ */
+function heliusRounding(a: bigint, b: bigint, balance: bigint = 0n): boolean {
+  const scale = Math.max(Math.abs(Number(b)), Math.abs(Number(balance)));
+  if (scale > 2 ** 53 && Math.abs(Number(a - b)) <= scale * 2 ** -50) {
+    roundingNotes++;
+    return true;
+  }
+  if (b !== 0n && Math.abs(Number(a - b)) <= Math.abs(Number(b)) * 1e-12) {
     roundingNotes++;
     return true;
   }
@@ -179,6 +187,13 @@ function heliusRounding(a: bigint, b: bigint): boolean {
 
 function checkTokens(tx: TxModel, h: HeliusTx): string[] {
   const ours = new Map(tx.tokenChanges.map((c) => [`${c.tokenAccount}|${c.mint}`, toRaw(c.delta, c.decimals)]));
+  const size = new Map(
+    tx.tokenChanges.map((c) => {
+      const pre = toRaw(c.pre, c.decimals);
+      const post = toRaw(c.post, c.decimals);
+      return [`${c.tokenAccount}|${c.mint}`, pre > post ? pre : post];
+    }),
+  );
   const theirs = new Map<string, bigint>();
   for (const a of h.accountData) {
     for (const c of a.tokenBalanceChanges) {
@@ -190,7 +205,7 @@ function checkTokens(tx: TxModel, h: HeliusTx): string[] {
   for (const key of new Set([...ours.keys(), ...theirs.keys()])) {
     const a = ours.get(key) ?? 0n;
     const b = theirs.get(key) ?? 0n;
-    if (a !== b && !heliusRounding(a, b)) {
+    if (a !== b && !heliusRounding(a, b, size.get(key))) {
       const [account, mint] = key.split("|");
       problems.push(`${shortAddress(account)} (${shortAddress(mint)}): Docent ${a}, Helius ${b}`);
     }
