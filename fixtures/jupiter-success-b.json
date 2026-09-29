@@ -631,6 +631,43 @@
       "reverted": false
     }
   ],
+  "tokenAccounts": [
+    {
+      "address": "7osJ2JciuCdvsjm3sFL7PkXDwKzvGHQPHfJoBqSL3ojj",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "4XBqViD1XYF1qHrErrsXBzDrCapvP9fEFX4LPjXZi9YU"
+    },
+    {
+      "address": "F78VoN9XRQYtKAJdFtHjASBxPSE7CSXx9sq57WExYpBm",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "4XBqViD1XYF1qHrErrsXBzDrCapvP9fEFX4LPjXZi9YU"
+    },
+    {
+      "address": "9EjVBQfLuA1XfqdFRW3oYW1FWLhYWU7iXCanAZ5nvdih",
+      "mint": "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
+      "owner": "4XBqViD1XYF1qHrErrsXBzDrCapvP9fEFX4LPjXZi9YU"
+    },
+    {
+      "address": "9idt3G1nYEPcwiygL3Rzh15eE5Lya5MpETYt51Nb7Xpr",
+      "mint": "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
+      "owner": "J5jzvT22u1Mt6de4gkBhEsTSTjBfYS7A6aF5jzu9ihkC"
+    },
+    {
+      "address": "4ppD2W72me5pQvMHJqCX5u1XmRb14jcMvWDB8dBDv4D8",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "J5jzvT22u1Mt6de4gkBhEsTSTjBfYS7A6aF5jzu9ihkC"
+    },
+    {
+      "address": "9dt86PLMhntCBm1jpQCi6zsFTtGBR7rvVEGhdk3pp1T5",
+      "mint": "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
+      "owner": "FAYL7CoNENA6jGCWVJb5MZ7mjKuiiyYRkDTopdVticpp"
+    },
+    {
+      "address": "FpqzUjo7zDj7EdDn336qZaaisvxBpMGkd27mmRtVLgDt",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "FAYL7CoNENA6jGCWVJb5MZ7mjKuiiyYRkDTopdVticpp"
+    }
+  ],
   "logs": [
     "Program ComputeBudget111111111111111111111111111111 invoke [1]",
     "Program ComputeBudget111111111111111111111111111111 success",

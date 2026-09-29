@@ -112,6 +112,13 @@ export const FailureSchema = z.object({
   raw: z.unknown(),
 });
 
+/** Every token account the transaction touched, with its mint and owning wallet. */
+export const TokenAccountSchema = z.object({
+  address: z.string(),
+  mint: z.string(),
+  owner: z.string().nullable(),
+});
+
 export const TxModelSchema = z.object({
   signature: z.string(),
   slot: z.number().int(),
@@ -128,6 +135,7 @@ export const TxModelSchema = z.object({
   solChanges: z.array(SolChangeSchema),
   tokenChanges: z.array(TokenChangeSchema),
   transfers: z.array(TransferSchema),
+  tokenAccounts: z.array(TokenAccountSchema).default([]),
   logs: z.array(z.string()),
   failure: FailureSchema.nullable(),
 });

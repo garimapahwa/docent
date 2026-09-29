@@ -1,4 +1,4 @@
-import { formatUnits, shortAddress } from "@/lib/format";
+import { formatUnits, parseUnits, shortAddress } from "@/lib/format";
 import { COMPUTE_BUDGET_PROGRAM_ID, SYSTEM_PROGRAM_ID, isTokenProgram, tokenLabel } from "@/lib/solana/known";
 import type { TopLevelInstruction, Transfer, TxModel } from "@/lib/tx/model";
 
@@ -60,12 +60,14 @@ export function walletFlows(tx: TxModel, wallet: string = tx.feePayer): TokenFlo
     const out = t.fromOwner === wallet && t.toOwner !== wallet;
     const into = t.toOwner === wallet && t.fromOwner !== wallet;
     if (!out && !into) continue;
-    const key = t.mint ?? "native-sol";
+    // Native SOL and wrapped SOL are the same asset to the wallet: one "SOL" line.
+    const isSol = t.mint === null || t.mint === WRAPPED_SOL_MINT;
+    const key = isSol ? "SOL" : t.mint!;
     const flow = flows.get(key) ?? {
-      mint: t.mint,
-      symbol: t.symbol,
-      symbolKnown: t.symbolKnown,
-      decimals: t.decimals,
+      mint: isSol ? null : t.mint,
+      symbol: isSol ? "SOL" : t.symbol,
+      symbolKnown: isSol ? true : t.symbolKnown,
+      decimals: isSol ? 9 : t.decimals,
       sent: 0n,
       received: 0n,
     };
@@ -87,12 +89,99 @@ function list(parts: string[]): string {
   return `${parts.slice(0, 2).join(", ")} and ${parts.length - 2} more`;
 }
 
+/** An asset's exact net change for one wallet. */
+export type NetAsset = {
+  mint: string | null;
+  symbol: string;
+  symbolKnown: boolean;
+  decimals: number;
+  net: bigint;
+};
+
 /**
- * Headline from net totals, so split routes (one token → two trades → same token) add up
- * correctly. Tokens that pass through the wallet and net to zero are left out.
+ * What actually changed for `wallet`, from Solana's before/after balances. This catches every
+ * kind of movement, including SOL paid out directly by programs (e.g. pump.fun sales) and
+ * refunds from closed accounts, which never appear as transfers.
+ *   tokens: balance changes of token accounts the wallet owns (wrapped SOL counted as SOL)
+ *   SOL:    lamport changes of the wallet and its token accounts, so wrapping SOL or funding
+ *           the wallet's own accounts cancels out; the network fee is excluded (shown separately)
  */
+export function walletNet(tx: TxModel, wallet: string = tx.feePayer): NetAsset[] {
+  const owned = new Set([wallet, ...tx.tokenAccounts.filter((a) => a.owner === wallet).map((a) => a.address)]);
+  let sol = wallet === tx.feePayer ? BigInt(tx.feeLamports) : 0n;
+  for (const c of tx.solChanges) if (owned.has(c.address)) sol += parseUnits(c.delta, 9);
+
+  const assets = new Map<string, NetAsset>();
+  if (sol !== 0n) assets.set("SOL", { mint: null, symbol: "SOL", symbolKnown: true, decimals: 9, net: sol });
+  for (const c of tx.tokenChanges) {
+    if (c.owner !== wallet || c.mint === WRAPPED_SOL_MINT) continue;
+    const asset = assets.get(c.mint) ?? {
+      mint: c.mint,
+      symbol: c.symbol,
+      symbolKnown: c.symbolKnown,
+      decimals: c.decimals,
+      net: 0n,
+    };
+    asset.net += parseUnits(c.delta, c.decimals);
+    assets.set(c.mint, asset);
+  }
+  return [...assets.values()].filter((a) => a.net !== 0n);
+}
+
+/**
+ * SOL changes this small are usually side costs (account deposits, tips) rather than the point
+ * of the transaction, unless SOL was clearly traded via transfers. 0.01 SOL.
+ */
+const SOL_SIDE_COST = 10_000_000n;
+const SOL_TRADED = 1_000_000n;
+
+/** Splits the wallet's net changes into the main assets and a small SOL side cost (if any). */
+export function mainAndSideCost(tx: TxModel, wallet: string = tx.feePayer): { main: NetAsset[]; solSide: bigint } {
+  const net = walletNet(tx, wallet);
+  const sol = net.find((a) => a.mint === null);
+  const others = net.filter((a) => a.mint !== null);
+  if (!sol || others.length === 0) return { main: net, solSide: 0n };
+  const solFlow = walletFlows(tx, wallet).find((f) => f.mint === null);
+  const tradedViaTransfers = solFlow !== undefined && (solFlow.sent >= SOL_TRADED || solFlow.received >= SOL_TRADED);
+  const abs = sol.net < 0n ? -sol.net : sol.net;
+  if (tradedViaTransfers || abs >= SOL_SIDE_COST) return { main: net, solSide: 0n };
+  return { main: others, solSide: sol.net };
+}
+
+function netAmount(a: NetAsset): string {
+  const abs = a.net < 0n ? -a.net : a.net;
+  return `${displayAmount(formatUnits(abs, a.decimals))} ${a.symbol}`;
+}
+
 /** One-line summary of what the transaction did for `wallet` (default: the wallet that sent it). */
 export function headline(tx: TxModel, wallet: string = tx.feePayer): string {
+  if (!tx.success) return attemptedHeadline(tx, wallet);
+
+  const { main } = mainAndSideCost(tx, wallet);
+  const sent = main.filter((a) => a.net < 0n);
+  const got = main.filter((a) => a.net > 0n);
+  if (sent.length > 0 && got.length > 0) {
+    return `Swapped ${list(sent.map(netAmount))} for ${list(got.map(netAmount))}`;
+  }
+
+  // One asset went out and came back (typical of trading bots): describe the loop using the
+  // gross transfers, which is what actually happened, rather than the tiny net difference.
+  const flows = walletFlows(tx, wallet);
+  const loop = flows.find((f) => f.sent > 0n && f.received > 0n && f.sent !== f.received);
+  if (loop && main.length <= 1 && (main.length === 0 || (main[0].mint ?? null) === loop.mint)) {
+    return `Traded ${loop.symbol} in a loop: put in ${amountOf(loop, loop.sent)}, got back ${amountOf(loop, loop.received)}`;
+  }
+
+  if (sent.length > 0) return `Sent ${list(sent.map(netAmount))}`;
+  if (got.length > 0) return `Received ${list(got.map(netAmount))}`;
+  return "Ran programs without moving any tokens";
+}
+
+/**
+ * Failed transactions change nothing, so describe what they tried to do from the transfers
+ * they attempted (net totals, so split routes add up).
+ */
+function attemptedHeadline(tx: TxModel, wallet: string): string {
   const flows = walletFlows(tx, wallet);
   const sent = flows.filter((f) => f.received < f.sent);
   const got = flows.filter((f) => f.received > f.sent);
@@ -100,26 +189,13 @@ export function headline(tx: TxModel, wallet: string = tx.feePayer): string {
   if (sent.length > 0 && got.length > 0) {
     const s = list(sent.map((f) => amountOf(f, f.sent - f.received)));
     const g = list(got.map((f) => amountOf(f, f.received - f.sent)));
-    return tx.success ? `Swapped ${s} for ${g}` : `Tried to swap ${s} for ${g}, but it was cancelled`;
+    return `Tried to swap ${s} for ${g}, but it was cancelled`;
   }
-
-  // Same token out and back in: a loop (typical of trading bots).
   const loop = flows.find((f) => f.sent > 0n && f.received > 0n && f.sent !== f.received);
-  if (loop) {
-    return tx.success
-      ? `Traded ${loop.symbol} in a loop: put in ${amountOf(loop, loop.sent)}, got back ${amountOf(loop, loop.received)}`
-      : `Tried to trade ${amountOf(loop, loop.sent)} in a loop back to ${loop.symbol}, but it was cancelled`;
-  }
-
-  if (sent.length > 0) {
-    const s = list(sent.map((f) => amountOf(f, f.sent - f.received)));
-    return `${tx.success ? "Sent" : "Tried to send"} ${s}`;
-  }
-  if (got.length > 0) {
-    const g = list(got.map((f) => amountOf(f, f.received - f.sent)));
-    return `${tx.success ? "Received" : "Tried to receive"} ${g}`;
-  }
-  return tx.success ? "Ran programs without moving any tokens" : "A transaction that failed";
+  if (loop) return `Tried to trade ${amountOf(loop, loop.sent)} in a loop back to ${loop.symbol}, but it was cancelled`;
+  if (sent.length > 0) return `Tried to send ${list(sent.map((f) => amountOf(f, f.sent - f.received)))}`;
+  if (got.length > 0) return `Tried to receive ${list(got.map((f) => amountOf(f, f.received - f.sent)))}`;
+  return "A transaction that failed";
 }
 
 /** Swaps inside a router instruction: transfers grouped by the exchange that made them. */
@@ -227,8 +303,15 @@ export function explainTransaction(tx: TxModel): Explanation {
     tx.failure?.errorName === "SlippageToleranceExceeded"
       ? "prices moved, so the trade would have returned less than the minimum the wallet agreed to accept."
       : (tx.failure?.description ?? "an error occurred.");
+  const { solSide } = tx.success ? mainAndSideCost(tx) : { solSide: 0n };
+  const side =
+    solSide < 0n
+      ? ` It also spent ${displayAmount(formatUnits(-solSide, 9))} SOL on small extras like account deposits and tips.`
+      : solSide > 0n
+        ? ` It also got back ${displayAmount(formatUnits(solSide, 9))} SOL, such as refunded account deposits.`
+        : "";
   const outcome = tx.success
-    ? `Everything worked. The wallet paid a network fee of ${tx.feeSol} SOL.`
+    ? `Everything worked. The wallet paid a network fee of ${tx.feeSol} SOL.${side}`
     : `Then it stopped: ${reason} Solana undid every step, so nothing moved except the ${tx.feeSol} SOL fee.`;
 
   return { headline: headline(tx), steps, outcome };

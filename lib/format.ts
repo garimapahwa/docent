@@ -18,6 +18,14 @@ export function formatUnits(raw: bigint, decimals: number): string {
   return negative ? `-${out}` : out;
 }
 
+/** Exact inverse of formatUnits: "-10.4819" with 6 decimals → -10481900n. */
+export function parseUnits(decimal: string, decimals: number): bigint {
+  const negative = decimal.startsWith("-");
+  const [whole, frac = ""] = decimal.replace("-", "").split(".");
+  const raw = BigInt(whole + frac.padEnd(decimals, "0").slice(0, decimals));
+  return negative ? -raw : raw;
+}
+
 export const SOL_DECIMALS = 9;
 
 export function lamportsToSol(lamports: bigint | number): string {

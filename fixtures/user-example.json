@@ -1094,6 +1094,78 @@
       "reverted": false
     }
   ],
+  "tokenAccounts": [
+    {
+      "address": "4aiBUEu9JkKjcPhuNoFLqoTYjUUx4eik3TucamHCGqyy",
+      "mint": "2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH",
+      "owner": "Ap7HRzabgzY4tNEWRjY2XMy3HSBuLwsx67Jwe8pTGNsS"
+    },
+    {
+      "address": "8cj5YUJmVUSHzAbAQ4v8gQHtwaXQrBQ72ghpedBUQGnX",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "Ap7HRzabgzY4tNEWRjY2XMy3HSBuLwsx67Jwe8pTGNsS"
+    },
+    {
+      "address": "8F1i1XMPjc9ie8PMDe9XCSHSdAEhAonz9W51ZopDvAZj",
+      "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+      "owner": "Ap7HRzabgzY4tNEWRjY2XMy3HSBuLwsx67Jwe8pTGNsS"
+    },
+    {
+      "address": "2ovNVDzhRTXyijrs38rbhEyw7XDPvRXHHr7hvPDv5aRs",
+      "mint": "2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH",
+      "owner": "2ovNVDzhRTXyijrs38rbhEyw7XDPvRXHHr7hvPDv5aRs"
+    },
+    {
+      "address": "6KzHa7L1MDTkaUb4qGiJqMvnmAy1qztGDeLvSHdS9ooU",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "6KzHa7L1MDTkaUb4qGiJqMvnmAy1qztGDeLvSHdS9ooU"
+    },
+    {
+      "address": "JAVj73fdncxHNkJpH5KZ5fdU5cCNnMwxtEEvjCwt3BEn",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "JAVj73fdncxHNkJpH5KZ5fdU5cCNnMwxtEEvjCwt3BEn"
+    },
+    {
+      "address": "4dSG9tKHZR4CAictyEnH9XuGZyKapodWXq5xyg7uFwE9",
+      "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+      "owner": "4fuUiYxTQ6QCrdSq9ouBYcTM7bqSwYTSyLueGZLTy4T4"
+    },
+    {
+      "address": "4oY1eVHJrt7ywuFoQnAZwto4qcQip1QhYMAhD11PU4QL",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "4fuUiYxTQ6QCrdSq9ouBYcTM7bqSwYTSyLueGZLTy4T4"
+    },
+    {
+      "address": "5dRazfLSjTq15r7XL6b5WBGTFtria1EHZQS7VZr7BD5V",
+      "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+      "owner": "EEUNhHsRoUVgJUFpkupmdF4v7uLUw1zhYLp7u9s8zFqG"
+    },
+    {
+      "address": "F9xyBfChZ2uCv7aQujJCe6gKVx7ydCmxfh2ZWrNwFoKr",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "EEUNhHsRoUVgJUFpkupmdF4v7uLUw1zhYLp7u9s8zFqG"
+    },
+    {
+      "address": "EPUHjseXG3izk3MVUJ1PcyWT9xeBhtAnq8gUpq3j8Uni",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "EPUHjseXG3izk3MVUJ1PcyWT9xeBhtAnq8gUpq3j8Uni"
+    },
+    {
+      "address": "UUUXQdoC85FmgUgDMfYj3UsBWMLSjU7gVj4QmYGdMRx",
+      "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+      "owner": "UUUXQdoC85FmgUgDMfYj3UsBWMLSjU7gVj4QmYGdMRx"
+    },
+    {
+      "address": "FY9wSdzRso94KRRdx9Ukzw7544iP9DsLPq6veya6b6GG",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "FY9wSdzRso94KRRdx9Ukzw7544iP9DsLPq6veya6b6GG"
+    },
+    {
+      "address": "kV85Zo8nQ9WWd8tfgAvVbBWf1cqPnZDfVQ2wzdcUpuw",
+      "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+      "owner": "kV85Zo8nQ9WWd8tfgAvVbBWf1cqPnZDfVQ2wzdcUpuw"
+    }
+  ],
   "logs": [
     "Program ComputeBudget111111111111111111111111111111 invoke [1]",
     "Program ComputeBudget111111111111111111111111111111 success",

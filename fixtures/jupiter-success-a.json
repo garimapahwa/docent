@@ -733,6 +733,53 @@
       "reverted": false
     }
   ],
+  "tokenAccounts": [
+    {
+      "address": "59v2cSbCsnyaWymLnsq6TWzE6cEN5KJYNTBNrcP4smRH",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "6U91aKa8pmMxkJwBCfPTmUEfZi6dHe7DcFq2ALvB2tbB"
+    },
+    {
+      "address": "7x4VcEX8aLd3kFsNWULTp1qFgVtDwyWSxpTGQkoMM6XX",
+      "mint": "So11111111111111111111111111111111111111112",
+      "owner": "6U91aKa8pmMxkJwBCfPTmUEfZi6dHe7DcFq2ALvB2tbB"
+    },
+    {
+      "address": "B4KjoNeTwByJpuJCPg6N2A2xXHJoZcN4NFA2KSkqo99d",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "CZhjfz4io4hwCWHCzTu3FMS5TTBtTDAX6qApEWmDV1xp"
+    },
+    {
+      "address": "ETBS8NHX4SzHzoajbpLTwGAVC6zQrV3NzrS6MMUHPQ2e",
+      "mint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+      "owner": "6U91aKa8pmMxkJwBCfPTmUEfZi6dHe7DcFq2ALvB2tbB"
+    },
+    {
+      "address": "XRNgJkizFb5NsQdvZ5m6DZcEuHniqr6AkZrBghjKnJA",
+      "mint": "So11111111111111111111111111111111111111112",
+      "owner": "6b5LxeDVxqCGAhZjjjgieGP71c5GBt2cBwiafCFX6NMU"
+    },
+    {
+      "address": "31u6Trjvb8RibaokKouRQ4a6iiNtgoqQxRnUqvoi7KJv",
+      "mint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+      "owner": "6b5LxeDVxqCGAhZjjjgieGP71c5GBt2cBwiafCFX6NMU"
+    },
+    {
+      "address": "CQUfYBxF2KFVjYyCPyGa7JCFX9zw2PwmNnECzY3merGA",
+      "mint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+      "owner": "CQUfYBxF2KFVjYyCPyGa7JCFX9zw2PwmNnECzY3merGA"
+    },
+    {
+      "address": "F2KCaXcp7AoQtxTDvNEDCyMyWjSCAMWNzcyN9dsPfPs5",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "F2KCaXcp7AoQtxTDvNEDCyMyWjSCAMWNzcyN9dsPfPs5"
+    },
+    {
+      "address": "6XdJ8syiKvVy7qmACRiGAAmKVbu5XJ9CHUZ9aftoxbHZ",
+      "mint": "So11111111111111111111111111111111111111112",
+      "owner": "CZhjfz4io4hwCWHCzTu3FMS5TTBtTDAX6qApEWmDV1xp"
+    }
+  ],
   "logs": [
     "Program ComputeBudget111111111111111111111111111111 invoke [1]",
     "Program ComputeBudget111111111111111111111111111111 success",

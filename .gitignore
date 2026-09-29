@@ -13,3 +13,6 @@ next-env.d.ts
 
 # One-off test output
 fixtures/check-*.json
+
+# Scratch files
+*.tmp.ts

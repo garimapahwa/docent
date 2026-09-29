@@ -204,24 +204,31 @@ function toTransfer(
     const lamports = info.lamports;
     if (typeof lamports !== "number" && typeof lamports !== "string") return null;
     const raw = BigInt(lamports);
+    if (raw === 0n) return null; // zero-amount transfers move nothing (often spam)
+    // Sending SOL into a token account (e.g. to wrap it) goes to that account's owner,
+    // so wrapping SOL in your own wrapped-SOL account isn't counted as spending it.
+    const fromOwner = tokenAccounts.get(from)?.owner ?? from;
+    const toOwner = tokenAccounts.get(to)?.owner ?? to;
     return {
       ...base,
       kind: "sol",
-      fromOwner: from,
-      toOwner: to,
+      fromOwner,
+      toOwner,
       mint: null,
       symbol: "SOL",
       symbolKnown: true,
       decimals: SOL_DECIMALS,
       amount: lamportsToSol(raw),
       rawAmount: raw.toString(),
-      involvesFeePayer: from === feePayer || to === feePayer,
+      involvesFeePayer: fromOwner === feePayer || toOwner === feePayer,
     };
   }
 
-  if (isTokenProgram(ix.programId) && (ix.type === "transfer" || ix.type === "transferChecked")) {
+  const TOKEN_TRANSFERS = ["transfer", "transferChecked", "transferCheckedWithFee"];
+  if (isTokenProgram(ix.programId) && ix.type && TOKEN_TRANSFERS.includes(ix.type)) {
     const checked = info.tokenAmount as { amount?: unknown; decimals?: unknown } | undefined;
-    const rawStr = ix.type === "transferChecked" ? checked?.amount : info.amount;
+    // transferChecked(WithFee) carry { tokenAmount: { amount, decimals } }; plain transfer has { amount }.
+    const rawStr = ix.type === "transfer" ? info.amount : checked?.amount;
     if (typeof rawStr !== "string") return null;
     const src = tokenAccounts.get(from);
     const dst = tokenAccounts.get(to);
@@ -230,6 +237,7 @@ function toTransfer(
       typeof checked?.decimals === "number" ? checked.decimals : (src?.decimals ?? dst?.decimals ?? null);
     const token = mint ? tokenLabel(mint) : null;
     const raw = BigInt(rawStr);
+    if (raw === 0n) return null; // zero-amount transfers move nothing (often spam)
     const fromOwner = src?.owner ?? null;
     const toOwner = dst?.owner ?? null;
     return {
@@ -378,6 +386,7 @@ export function normalizeTransaction(signature: string, tx: ParsedTransactionWit
     solChanges: computeSolChanges(addresses, feePayer, meta.preBalances, meta.postBalances),
     tokenChanges: computeTokenChanges(addresses, feePayer, preTokenBalances, postTokenBalances),
     transfers,
+    tokenAccounts: [...tokenAccounts].map(([address, a]) => ({ address, mint: a.mint, owner: a.owner })),
     logs,
     failure: success
       ? null

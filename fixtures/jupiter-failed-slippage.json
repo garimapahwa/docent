@@ -681,6 +681,53 @@
       "reverted": true
     }
   ],
+  "tokenAccounts": [
+    {
+      "address": "68b3HHzHkFt6RA2n2yAAoYoUKEBskij7qXkgT7jyv2Nw",
+      "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+      "owner": "B4RRE8DrRRLAH3d6CAqmSixLdcurwnic1h83rEYmSY4s"
+    },
+    {
+      "address": "EnN2PhjYDcvWL5UJEaqimSbsJVw3PKJTvj71pEJzirfp",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "B4RRE8DrRRLAH3d6CAqmSixLdcurwnic1h83rEYmSY4s"
+    },
+    {
+      "address": "Gs9EYbXA73q1vFQufnGnamBn95YwFJJNp9KUowme6v7m",
+      "mint": "So11111111111111111111111111111111111111112",
+      "owner": "B4RRE8DrRRLAH3d6CAqmSixLdcurwnic1h83rEYmSY4s"
+    },
+    {
+      "address": "8ncU5YW1CQwvr4gs7buH57bW58e86TDau4STrCJBuz8z",
+      "mint": "So11111111111111111111111111111111111111112",
+      "owner": "GMCJvYGf5Ex2ARiMquaBDqU6iKM8uiEQkB8jCnoNfHpC"
+    },
+    {
+      "address": "EunHLeqeJKvxnCPQSytnBP63HJVk2fbHceiKKpngyAo8",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "GMCJvYGf5Ex2ARiMquaBDqU6iKM8uiEQkB8jCnoNfHpC"
+    },
+    {
+      "address": "2n6fxuD6PA5NYgEnXXYMh2iWD1JBJ1LGf76kFJAayZmX",
+      "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+      "owner": "3nMFwZXwY1s1M5s8vYAHqd4wGs4iSxXE4LRoUMMYqEgF"
+    },
+    {
+      "address": "AbcuyoPeYnddzFoFQudsiFka8qd6tTwvLgxwtpTKTpKC",
+      "mint": "So11111111111111111111111111111111111111112",
+      "owner": "3nMFwZXwY1s1M5s8vYAHqd4wGs4iSxXE4LRoUMMYqEgF"
+    },
+    {
+      "address": "4dSG9tKHZR4CAictyEnH9XuGZyKapodWXq5xyg7uFwE9",
+      "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+      "owner": "4fuUiYxTQ6QCrdSq9ouBYcTM7bqSwYTSyLueGZLTy4T4"
+    },
+    {
+      "address": "4oY1eVHJrt7ywuFoQnAZwto4qcQip1QhYMAhD11PU4QL",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "4fuUiYxTQ6QCrdSq9ouBYcTM7bqSwYTSyLueGZLTy4T4"
+    }
+  ],
   "logs": [
     "Program 11111111111111111111111111111111 invoke [1]",
     "Program 11111111111111111111111111111111 success",

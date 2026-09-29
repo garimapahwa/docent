@@ -432,6 +432,28 @@
       "reverted": true
     }
   ],
+  "tokenAccounts": [
+    {
+      "address": "5brKFZh1GkkEo6ofb4uRhC9wfMVw1NWfYFjXKFYsJbrc",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV"
+    },
+    {
+      "address": "8ncU5YW1CQwvr4gs7buH57bW58e86TDau4STrCJBuz8z",
+      "mint": "So11111111111111111111111111111111111111112",
+      "owner": "GMCJvYGf5Ex2ARiMquaBDqU6iKM8uiEQkB8jCnoNfHpC"
+    },
+    {
+      "address": "EunHLeqeJKvxnCPQSytnBP63HJVk2fbHceiKKpngyAo8",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "owner": "GMCJvYGf5Ex2ARiMquaBDqU6iKM8uiEQkB8jCnoNfHpC"
+    },
+    {
+      "address": "BU8L8F49PaquzBCearokmTmHu49cFcAt7TvGxERnhbQX",
+      "mint": "So11111111111111111111111111111111111111112",
+      "owner": "6HnB5DM7wbUSxaS4FaBukiD8f66LFALaaVoz6QoJ9BxV"
+    }
+  ],
   "logs": [
     "Program ComputeBudget111111111111111111111111111111 invoke [1]",
     "Program ComputeBudget111111111111111111111111111111 success",
