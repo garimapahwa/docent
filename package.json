@@ -14,9 +14,11 @@
     "verify": "tsx scripts/verify.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.129.0",
     "@remotion/google-fonts": "^4.0.529",
     "@remotion/media-utils": "^4.0.529",
     "@remotion/player": "^4.0.529",
+    "@remotion/web-renderer": "^4.0.529",
     "@solana/web3.js": "^1.98.0",
     "next": "^15.5.0",
     "react": "^19.1.0",

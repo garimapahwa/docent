@@ -9,6 +9,15 @@ export type TxResponse = {
   voice: string[] | null;
 };
 
+/** Response of GET /api/storyboard. */
+export type StoryboardResponse = {
+  storyboard: Storyboard;
+  /** "ai": Claude's captions; "mixed": some replaced by the safe version; "fallback": deterministic. */
+  source: "ai" | "mixed" | "fallback";
+  notes: string[];
+  voice: string[] | null;
+};
+
 /** One row of GET /api/recent. */
 export type WalletTx = {
   signature: string;

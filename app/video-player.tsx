@@ -3,9 +3,11 @@
 import { getAudioDurationInSeconds } from "@remotion/media-utils";
 import { Player } from "@remotion/player";
 import { useEffect, useMemo, useState } from "react";
-import type { TxResponse } from "@/lib/api";
+import type { StoryboardResponse, TxResponse } from "@/lib/api";
+import type { Storyboard } from "@/lib/storyboard/schema";
 import { DocentVideo, videoDuration, type VoiceLine } from "@/remotion/DocentVideo";
 import { VIDEO } from "@/remotion/theme";
+import { DownloadButton } from "./download-button";
 
 const VOICE_TIMEOUT_MS = 45_000;
 /** ElevenLabs' free plan generates at most 2 lines at once, so load 2 at a time. */
@@ -39,29 +41,56 @@ async function loadVoice(urls: string[]): Promise<(VoiceLine | null)[] | null> {
   return Promise.race([load, timeout]);
 }
 
+const STORYBOARD_TIMEOUT_MS = 50_000;
+
+type Story = { storyboard: Storyboard; voice: string[] | null; source: StoryboardResponse["source"] };
+
+/** Claude's storyboard from the server; the deterministic one from /api/tx if that fails or is slow. */
+async function loadStory(data: TxResponse): Promise<Story> {
+  const fallback: Story = { storyboard: data.storyboard, voice: data.voice, source: "fallback" };
+  try {
+    const res = await fetch(`/api/storyboard?sig=${encodeURIComponent(data.tx.signature)}`, {
+      signal: AbortSignal.timeout(STORYBOARD_TIMEOUT_MS),
+    });
+    if (!res.ok) return fallback;
+    const body = (await res.json()) as StoryboardResponse;
+    return { storyboard: body.storyboard, voice: body.voice, source: body.source };
+  } catch {
+    return fallback;
+  }
+}
+
 export default function VideoPlayer({ data }: { data: TxResponse }) {
-  const [voice, setVoice] = useState<(VoiceLine | null)[] | null | "loading">(data.voice ? "loading" : null);
+  const [story, setStory] = useState<Story | null>(null);
+  const [voice, setVoice] = useState<(VoiceLine | null)[] | null | "loading">("loading");
 
   useEffect(() => {
-    if (!data.voice) return;
     let cancelled = false;
-    loadVoice(data.voice).then((lines) => {
+    (async () => {
+      const s = await loadStory(data);
+      if (cancelled) return;
+      setStory(s);
+      const lines = s.voice ? await loadVoice(s.voice) : null;
       if (!cancelled) setVoice(lines);
-    });
+    })();
     return () => {
       cancelled = true;
     };
-  }, [data.voice]);
+  }, [data]);
 
   const inputProps = useMemo(
-    () => ({ tx: data.tx, storyboard: data.storyboard, voice: voice === "loading" ? null : voice }),
-    [data, voice],
+    () => ({
+      tx: data.tx,
+      storyboard: story?.storyboard ?? data.storyboard,
+      voice: voice === "loading" ? null : voice,
+    }),
+    [data, story, voice],
   );
 
-  if (voice === "loading") {
+  if (!story || voice === "loading") {
     return (
       <div className="grid aspect-video place-items-center rounded-2xl bg-[#0B0B0F] text-sm text-[#8B8B99]">
-        Recording the narration…
+        {story ? "Recording the narration…" : "Writing the storyboard…"}
       </div>
     );
   }
@@ -89,6 +118,13 @@ export default function VideoPlayer({ data }: { data: TxResponse }) {
         )}
         style={{ width: "100%", aspectRatio: `${VIDEO.width} / ${VIDEO.height}` }}
       />
+      <div className="border-t border-border bg-bg px-4 py-3">
+        <DownloadButton
+          props={inputProps}
+          durationInFrames={videoDuration(inputProps)}
+          filename={`docent-${data.tx.signature.slice(0, 8)}.mp4`}
+        />
+      </div>
     </div>
   );
 }
