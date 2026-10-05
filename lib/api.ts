@@ -1,5 +1,6 @@
 import type { Storyboard } from "@/lib/storyboard/schema";
 import type { TxModel } from "@/lib/tx/model";
+import type { Warning } from "@/lib/tx/risk";
 
 /** Response of GET /api/tx. */
 export type TxResponse = {
@@ -16,6 +17,14 @@ export type StoryboardResponse = {
   source: "ai" | "mixed" | "fallback";
   notes: string[];
   voice: string[] | null;
+};
+
+/** Response of POST /api/check: a simulated, unsent transaction. */
+export type CheckResponse = {
+  tx: TxModel;
+  /** Slot the dry run was done against. */
+  slot: number;
+  warnings: Warning[];
 };
 
 /** One row of GET /api/recent. */

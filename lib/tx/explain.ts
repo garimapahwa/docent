@@ -1,6 +1,6 @@
 import { formatUnits, parseUnits, shortAddress } from "@/lib/format";
 import { COMPUTE_BUDGET_PROGRAM_ID, SYSTEM_PROGRAM_ID, isTokenProgram, tokenLabel } from "@/lib/solana/known";
-import type { TopLevelInstruction, Transfer, TxModel } from "@/lib/tx/model";
+import type { Instruction, TopLevelInstruction, Transfer, TxModel } from "@/lib/tx/model";
 
 /**
  * Plain-English explanation of a TxModel, built only from facts in the model.
@@ -174,6 +174,12 @@ export function headline(tx: TxModel, wallet: string = tx.feePayer): string {
 
   if (sent.length > 0) return `Sent ${list(sent.map(netAmount))}`;
   if (got.length > 0) return `Received ${list(got.map(netAmount))}`;
+
+  // Nothing moved, but permissions can matter more than movements.
+  const all = tx.instructions.flatMap((ix) => [ix, ...ix.inner]);
+  const approval = all.find((ix) => (ix.type === "approve" || ix.type === "approveChecked") && isTokenProgram(ix.programId));
+  if (approval) return `Gave another address permission to spend ${approvalAmount(tx, approval).text}`;
+  if (all.some((ix) => ix.type === "setAuthority" && isTokenProgram(ix.programId))) return "Handed over control of a token account";
   return "Ran programs without moving any tokens";
 }
 
@@ -223,6 +229,32 @@ function venueSwaps(ix: TopLevelInstruction, transfers: Transfer[], payer: strin
   return lines;
 }
 
+/** The largest possible token amount: approving this means "unlimited". */
+const U64_MAX = "18446744073709551615";
+
+/** Symbol and decimals of the token held in `tokenAccount`, if the transaction shows it. */
+export function tokenIn(tx: TxModel, tokenAccount: unknown): { symbol: string; decimals: number | null } {
+  const mint = tx.tokenAccounts.find((a) => a.address === tokenAccount)?.mint;
+  if (!mint) return { symbol: "tokens", decimals: null };
+  return { symbol: tokenLabel(mint).symbol, decimals: tx.tokenChanges.find((c) => c.mint === mint)?.decimals ?? null };
+}
+
+/** How much an approve/approveChecked instruction lets the delegate spend, e.g. "an unlimited amount of USDC". */
+export function approvalAmount(tx: TxModel, ix: Instruction): { symbol: string; text: string } {
+  const info = ix.info ?? {};
+  const token = tokenIn(tx, info.source);
+  const checked = info.tokenAmount as { amount?: string; decimals?: number } | undefined;
+  const raw = ix.type === "approve" ? info.amount : checked?.amount;
+  const decimals = typeof checked?.decimals === "number" ? checked.decimals : token.decimals;
+  const text =
+    raw === U64_MAX
+      ? `an unlimited amount of ${token.symbol}`
+      : typeof raw === "string" && decimals !== null
+        ? `up to ${displayAmount(formatUnits(BigInt(raw), decimals))} ${token.symbol}`
+        : `the wallet's ${token.symbol}`;
+  return { symbol: token.symbol, text };
+}
+
 function describe(ix: TopLevelInstruction, tx: TxModel): Omit<ExplainedStep, "failed"> {
   const info = ix.info ?? {};
   const str = (k: string) => (typeof info[k] === "string" ? (info[k] as string) : null);
@@ -232,8 +264,11 @@ function describe(ix: TopLevelInstruction, tx: TxModel): Omit<ExplainedStep, "fa
       return { text: "Used a durable nonce, a pre-signed ticket that lets a transaction be sent later", details: [] };
     if (ix.type === "transfer") {
       const t = tx.transfers.find((x) => x.index === ix.index && x.innerIndex === null);
+      const wrapping = t && tx.tokenAccounts.some((a) => a.address === t.to && a.mint === WRAPPED_SOL_MINT && a.owner === t.fromOwner);
+      if (t && wrapping) return { text: `Put ${money(t)} into the wallet's wrapped SOL account, so it can be traded like a token`, details: [] };
       if (t) return { text: `Sent ${money(t)} to ${shortAddress(t.to)}`, details: [] };
     }
+    if (ix.type === "assign") return { text: `Handed control of an account to the program ${shortAddress(str("owner") ?? "")}`, details: [] };
     if (ix.type === "createAccount") return { text: "Created a new account", details: [] };
   }
 
@@ -251,6 +286,19 @@ function describe(ix: TopLevelInstruction, tx: TxModel): Omit<ExplainedStep, "fa
     if (ix.type === "closeAccount")
       return { text: "Closed a temporary token account and got its small SOL deposit back", details: [] };
     if (ix.type === "syncNative") return { text: "Updated the wallet's wrapped SOL balance", details: [] };
+    if (ix.type === "approve" || ix.type === "approveChecked") {
+      return {
+        text: `Gave ${shortAddress(str("delegate") ?? "another address")} permission to spend ${approvalAmount(tx, ix).text}`,
+        details: [],
+      };
+    }
+    if (ix.type === "revoke") return { text: "Took back a permission it had given another address to spend its tokens", details: [] };
+    if (ix.type === "setAuthority") {
+      const token = tokenIn(tx, str("account"));
+      const to = str("newAuthority");
+      const role = str("authorityType") === "accountOwner" ? "ownership" : "control";
+      return { text: `Handed ${role} of a ${token.symbol} account to ${to ? shortAddress(to) : "nobody"}`, details: [] };
+    }
     const t = tx.transfers.find((x) => x.index === ix.index && x.innerIndex === null);
     if (t) {
       const internal = t.fromOwner === t.toOwner && t.fromOwner !== null;

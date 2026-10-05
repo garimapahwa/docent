@@ -38,7 +38,29 @@ function rpcError(err: unknown): TxFetchError {
   return new TxFetchError("rpc_error", 502, `The Solana RPC returned an error: ${message}`);
 }
 
-export type RecentTx = { signature: string; success: boolean; blockTime: number | null };
+/**
+ * A raw JSON-RPC call, for responses web3.js can't handle (e.g. simulations with parsed
+ * accounts, which its response validation rejects).
+ */
+export async function rpcCall<T>(method: string, params: unknown[]): Promise<T> {
+  let body: { result?: T; error?: { message?: string } };
+  try {
+    const res = await fetch(process.env.SOLANA_RPC_URL || DEFAULT_RPC_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (res.status === 429) throw new Error("429 Too Many Requests");
+    body = await res.json();
+  } catch (err) {
+    throw rpcError(err);
+  }
+  if (body.error || body.result === undefined) throw rpcError(new Error(body.error?.message ?? "empty response"));
+  return body.result;
+}
+
+export type RecentTx ={ signature: string; success: boolean; blockTime: number | null };
 
 /** Latest transactions a wallet (or any address) took part in, newest first. */
 export async function fetchRecentSignatures(address: string, limit = 8): Promise<RecentTx[]> {

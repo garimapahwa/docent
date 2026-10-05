@@ -5,9 +5,13 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { shortAddress } from "@/lib/format";
 import { explainTransaction } from "@/lib/tx/explain";
 import { ApiErrorSchema, type TxModel } from "@/lib/tx/model";
-import type { TxResponse, WalletTx } from "@/lib/api";
-import { isValidAddress } from "@/lib/solana/signature";
-import { Glossary } from "./glossary";
+import type { CheckResponse, TxResponse, WalletTx } from "@/lib/api";
+import { isValidAddress, isValidSignature } from "@/lib/solana/signature";
+import { riskWarnings } from "@/lib/tx/risk";
+import { CheckResult } from "./check-result";
+import { Explained, Glossary } from "./glossary";
+import { Steps, Warnings } from "./steps";
+import { TradeCheckCard } from "./trade-check";
 
 // The Remotion player only runs in the browser.
 const VideoPlayer = dynamic(() => import("./video-player"), {
@@ -20,7 +24,11 @@ type State =
   | { status: "fetching"; label: string }
   | { status: "error"; message: string; attempt: number }
   | { status: "picking"; address: string; transactions: WalletTx[] }
-  | { status: "done"; data: TxResponse };
+  | { status: "done"; data: TxResponse }
+  | { status: "checked"; data: CheckResponse };
+
+/** Anything much longer than a signature (88 characters at most) is a whole transaction to check. */
+const looksLikeTransaction = (input: string) => input.length > 100 && !isValidSignature(input);
 
 /** Shareable path for an explained transaction or wallet. */
 function sharePath(input: string, isWallet: boolean): string {
@@ -45,6 +53,7 @@ export default function Explorer({ initialInput }: { initialInput?: string }) {
 
   async function explain(input: string) {
     if (!input) return;
+    if (looksLikeTransaction(input)) return check(input);
     const isWallet = isValidAddress(input);
     setState({ status: "fetching", label: isWallet ? "Loading this wallet's latest transactions" : "Fetching transaction" });
     const fail = (message: string) =>
@@ -69,6 +78,46 @@ export default function Explorer({ initialInput }: { initialInput?: string }) {
       window.history.replaceState(null, "", sharePath(input, isWallet));
     } catch {
       fail("Couldn't reach the server. Check your connection and try again.");
+    }
+  }
+
+  /** Dry-runs an unsigned transaction. Not shareable: it only exists in this browser. */
+  async function check(input: string) {
+    setState({ status: "fetching", label: "Doing a dry run of this transaction (nothing gets sent)" });
+    const fail = (message: string) =>
+      setState((s) => ({ status: "error", message, attempt: s.status === "error" ? s.attempt + 1 : 0 }));
+    try {
+      const res = await fetch("/api/check", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ transaction: input }),
+      });
+      const body: unknown = await res.json();
+      if (!res.ok) {
+        const parsed = ApiErrorSchema.safeParse(body);
+        return fail(parsed.success ? parsed.data.error.message : `Request failed (${res.status}).`);
+      }
+      setState({ status: "checked", data: body as CheckResponse });
+      window.history.replaceState(null, "", "/");
+    } catch {
+      fail("Couldn't reach the server. Check your connection and try again.");
+    }
+  }
+
+  /** Loads an example unsigned transaction and checks it. */
+  async function tryExample(kind: "swap" | "drainer") {
+    setState({ status: "fetching", label: kind === "swap" ? "Building an example swap" : "Building an example scam" });
+    try {
+      const res = await fetch(`/api/check/example?kind=${kind}`);
+      const body = (await res.json()) as { transaction?: string };
+      if (!res.ok || !body.transaction) {
+        const parsed = ApiErrorSchema.safeParse(body);
+        throw new Error(parsed.success ? parsed.data.error.message : "Couldn't build the example.");
+      }
+      setSignature(body.transaction);
+      await check(body.transaction);
+    } catch (err) {
+      setState({ status: "error", message: err instanceof Error ? err.message : "Couldn't build the example.", attempt: 0 });
     }
   }
 
@@ -97,9 +146,11 @@ export default function Explorer({ initialInput }: { initialInput?: string }) {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col px-6">
       <nav className="flex items-center py-8 font-mono text-sm">
-        <span>
+        {/* A full page load, not a client link: the address bar was rewritten with replaceState,
+            so a fresh load is the simplest way to clear the result and start over. */}
+        <a href="/" aria-label="Docent home" className="transition-colors hover:text-accent">
           docent<span className="blink text-accent">_</span>
-        </span>
+        </a>
       </nav>
 
       <section
@@ -129,6 +180,7 @@ export default function Explorer({ initialInput }: { initialInput?: string }) {
               value={signature}
               onChange={(e) => setSignature(e.target.value)}
               placeholder="Paste a transaction signature or wallet address"
+              aria-label="Transaction signature, wallet address, or unsigned transaction"
               spellCheck={false}
               autoFocus
               disabled={busy}
@@ -174,10 +226,29 @@ export default function Explorer({ initialInput }: { initialInput?: string }) {
           </div>
         </form>
 
+        {state.status === "idle" && (
+          <div className="rise flex flex-col gap-2 rounded-2xl border border-border p-5 text-sm" style={{ animationDelay: "120ms" }}>
+            <p className="font-medium">New: check a transaction before you sign it</p>
+            <p className="leading-relaxed text-muted">
+              When an app asks your wallet to sign something, paste that transaction here first. Docent does a dry run
+              and tells you what it would do, and warns you if it looks like a scam.
+            </p>
+            <p className="flex flex-wrap gap-x-5 gap-y-1">
+              <button onClick={() => tryExample("swap")} className="text-accent transition-opacity hover:opacity-70">
+                try a normal swap →
+              </button>
+              <button onClick={() => tryExample("drainer")} className="text-failure transition-opacity hover:opacity-70">
+                try a scam →
+              </button>
+            </p>
+          </div>
+        )}
+
         {state.status === "picking" && (
           <Picker address={state.address} transactions={state.transactions} onPick={pick} />
         )}
         {state.status === "done" && <Result key={state.data.tx.signature} data={state.data} />}
+        {state.status === "checked" && <CheckResult key={state.data.slot} data={state.data} />}
       </section>
     </main>
   );
@@ -201,6 +272,8 @@ function Result({ data }: { data: TxResponse }) {
   const [panel, setPanel] = useState<"words" | "raw" | null>(null);
   const toggle = (p: "words" | "raw") => setPanel((cur) => (cur === p ? null : p));
   const story = explainTransaction(model);
+  // Only the serious ones (handing over control) for a transaction that already happened.
+  const warnings = riskWarnings(model, { preview: false });
   const innerCount = model.instructions.reduce((n, ix) => n + ix.inner.length, 0);
   const stats: [string, string][] = [
     ["steps", `${model.instructions.length}${innerCount ? ` + ${innerCount} inner` : ""}`],
@@ -233,29 +306,9 @@ function Result({ data }: { data: TxResponse }) {
         {story.headline}
       </h2>
 
-      <ol className="flex flex-col gap-4">
-        {story.steps.map((step, i) => (
-          <li key={i} className="rise flex gap-4" style={{ animationDelay: `${120 + i * 60}ms` }}>
-            <span
-              className={`grid size-7 shrink-0 place-items-center rounded-full font-mono text-xs ${
-                step.failed ? "bg-failure text-white" : "bg-surface text-muted"
-              }`}
-            >
-              {i + 1}
-            </span>
-            <div className="flex flex-col gap-2 pt-0.5">
-              <p className={step.failed ? "text-failure" : ""}>{step.text}</p>
-              {step.details.length > 0 && (
-                <ul className="flex flex-col gap-1.5 border-l-2 border-border pl-4 text-sm text-muted">
-                  {step.details.map((d) => (
-                    <li key={d}>{d}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </li>
-        ))}
-      </ol>
+      <Warnings warnings={warnings} />
+
+      <Steps steps={story.steps} />
 
       <p
         className={`rise rounded-2xl px-5 py-4 leading-relaxed ${
@@ -263,8 +316,10 @@ function Result({ data }: { data: TxResponse }) {
         }`}
         style={{ animationDelay: `${120 + story.steps.length * 60}ms` }}
       >
-        {story.outcome}
+        <Explained text={story.outcome} />
       </p>
+
+      <TradeCheckCard signature={model.signature} />
 
       <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-4">
         {stats.map(([label, value], i) => (
