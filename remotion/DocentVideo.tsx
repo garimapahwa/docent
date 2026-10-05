@@ -33,7 +33,10 @@ const VOICE_TAIL = 20;
  */
 export function sceneDuration(scene: Scene, tx: TxModel, voice?: VoiceLine | null): number {
   const base = baseDuration(scene, tx);
-  return voice ? Math.max(base, VOICE_START + voice.frames + VOICE_TAIL) : base;
+  // A bad measurement (Safari reports Infinity for some audio) must never break the video.
+  return voice && Number.isFinite(voice.frames) && voice.frames > 0
+    ? Math.max(base, VOICE_START + Math.ceil(voice.frames) + VOICE_TAIL)
+    : base;
 }
 
 function baseDuration(scene: Scene, tx: TxModel): number {
@@ -88,8 +91,8 @@ export function DocentVideo({ tx, storyboard, voice }: DocentVideoProps) {
               <SceneFrame caption={scene.caption} duration={duration}>
                 <SceneContent scene={scene} tx={tx} duration={duration} />
               </SceneFrame>
-              {line && (
-                <Sequence from={VOICE_START} durationInFrames={line.frames}>
+              {line && Number.isFinite(line.frames) && line.frames > 0 && (
+                <Sequence from={VOICE_START} durationInFrames={Math.ceil(line.frames)}>
                   <Html5Audio src={line.src} />
                 </Sequence>
               )}

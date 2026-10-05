@@ -13,9 +13,22 @@ const VOICE_TIMEOUT_MS = 45_000;
 /** ElevenLabs' free plan generates at most 2 lines at once, so load 2 at a time. */
 const VOICE_CONCURRENCY = 2;
 
-async function measure(src: string): Promise<VoiceLine | null> {
+/**
+ * Downloads one narration line and measures it. The audio is played from a local copy (a blob
+ * URL): Safari reports a streamed MP3's length as Infinity and wants range requests to seek,
+ * and a local copy avoids both. A line that can't be measured is left silent.
+ */
+async function measure(url: string): Promise<VoiceLine | null> {
   try {
-    return { src, frames: Math.ceil((await getAudioDurationInSeconds(src)) * VIDEO.fps) };
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const src = URL.createObjectURL(await res.blob());
+    const seconds = await getAudioDurationInSeconds(src);
+    if (!Number.isFinite(seconds) || seconds <= 0) {
+      URL.revokeObjectURL(src);
+      return null;
+    }
+    return { src, frames: Math.ceil(seconds * VIDEO.fps) };
   } catch {
     return null;
   }
@@ -66,15 +79,18 @@ export default function VideoPlayer({ data }: { data: TxResponse }) {
 
   useEffect(() => {
     let cancelled = false;
+    let loaded: (VoiceLine | null)[] | null = null;
     (async () => {
       const s = await loadStory(data);
       if (cancelled) return;
       setStory(s);
-      const lines = s.voice ? await loadVoice(s.voice) : null;
-      if (!cancelled) setVoice(lines);
+      loaded = s.voice ? await loadVoice(s.voice) : null;
+      if (!cancelled) setVoice(loaded);
     })();
     return () => {
       cancelled = true;
+      // Free the downloaded narration when this video goes away.
+      loaded?.forEach((line) => line && URL.revokeObjectURL(line.src));
     };
   }, [data]);
 
