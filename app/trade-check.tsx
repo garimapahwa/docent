@@ -13,7 +13,7 @@ const unitPrice = (s: TradeSide) =>
 const VERDICTS = {
   better: { title: "Better than the market price", tone: "text-success", icon: "↑" },
   fair: { title: "Fair price", tone: "text-success", icon: "✓" },
-  slightly_worse: { title: "A bit below the market price", tone: "text-amber-600", icon: "~" },
+  slightly_worse: { title: "A bit below the market price", tone: "text-caution", icon: "~" },
   worse: { title: "Well below the market price", tone: "text-failure", icon: "↓" },
 } as const;
 

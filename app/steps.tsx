@@ -37,7 +37,7 @@ export function Steps({ steps }: { steps: ExplainedStep[] }) {
 
 const LEVELS = {
   danger: { box: "border-failure/40 bg-failure/10", title: "text-failure", icon: "⚠" },
-  caution: { box: "border-amber-500/40 bg-amber-500/10", title: "text-amber-700", icon: "!" },
+  caution: { box: "border-caution/40 bg-caution/10", title: "text-caution", icon: "!" },
   ok: { box: "border-success/40 bg-success/10", title: "text-success", icon: "✓" },
 } as const;
 

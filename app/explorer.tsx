@@ -11,6 +11,7 @@ import { riskWarnings } from "@/lib/tx/risk";
 import { CheckResult } from "./check-result";
 import { Explained, Glossary } from "./glossary";
 import { Steps, Warnings } from "./steps";
+import { ThemeToggle } from "./theme-toggle";
 import { TradeCheckCard } from "./trade-check";
 
 // The Remotion player only runs in the browser.
@@ -145,12 +146,13 @@ export default function Explorer({ initialInput }: { initialInput?: string }) {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col px-6">
-      <nav className="flex items-center py-8 font-mono text-sm">
+      <nav className="flex items-center justify-between py-8 font-mono text-sm">
         {/* A full page load, not a client link: the address bar was rewritten with replaceState,
             so a fresh load is the simplest way to clear the result and start over. */}
         <a href="/" aria-label="Docent home" className="transition-colors hover:text-accent">
           docent<span className="blink text-accent">_</span>
         </a>
+        <ThemeToggle />
       </nav>
 
       <section
