@@ -152,6 +152,8 @@ export type TxModel = z.infer<typeof TxModelSchema>;
 export const ApiErrorCodeSchema = z.enum([
   "invalid_signature",
   "invalid_transaction",
+  "payment_required",
+  "sign_in_required",
   "not_found",
   "rate_limited",
   "rpc_error",

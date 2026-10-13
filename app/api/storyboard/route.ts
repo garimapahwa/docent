@@ -7,6 +7,7 @@ import { isValidSignature } from "@/lib/solana/signature";
 import type { ApiError } from "@/lib/tx/model";
 import { normalizeTransaction } from "@/lib/tx/normalize";
 import { voiceUrl } from "@/lib/voice/sign";
+import { blocked, checkKey, mayView, validShareTag } from "@/lib/membership";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -53,6 +54,10 @@ export async function GET(req: NextRequest) {
       { error: { code: "invalid_signature", message: "That doesn't look like a transaction signature." } },
       { status: 400 },
     );
+  }
+  // Only for transactions this visitor has unlocked (a free check, a shared link, or membership).
+  if (!(await mayView(checkKey(sig), validShareTag(sig, req.nextUrl.searchParams.get("s"))))) {
+    return blocked("pay");
   }
   try {
     const result = await storyboardFor(sig);

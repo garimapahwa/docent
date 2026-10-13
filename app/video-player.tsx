@@ -62,7 +62,8 @@ type Story = { storyboard: Storyboard; voice: string[] | null; source: Storyboar
 async function loadStory(data: TxResponse): Promise<Story> {
   const fallback: Story = { storyboard: data.storyboard, voice: data.voice, source: "fallback" };
   try {
-    const res = await fetch(`/api/storyboard?sig=${encodeURIComponent(data.tx.signature)}`, {
+    const tag = data.shareTag ? `&s=${encodeURIComponent(data.shareTag)}` : "";
+    const res = await fetch(`/api/storyboard?sig=${encodeURIComponent(data.tx.signature)}${tag}`, {
       signal: AbortSignal.timeout(STORYBOARD_TIMEOUT_MS),
     });
     if (!res.ok) return fallback;

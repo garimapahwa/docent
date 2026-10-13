@@ -8,6 +8,8 @@ export type TxResponse = {
   storyboard: Storyboard;
   /** One narration URL per storyboard scene, or null when voice isn't configured. */
   voice: string[] | null;
+  /** Signed tag for share links (?s=…): opening them never uses a free check. Null when payments are off. */
+  shareTag: string | null;
 };
 
 /** Response of GET /api/storyboard. */
@@ -17,6 +19,18 @@ export type StoryboardResponse = {
   source: "ai" | "mixed" | "fallback";
   notes: string[];
   voice: string[] | null;
+};
+
+/** Response of GET /api/membership. */
+export type MembershipStatus = {
+  /** False until Clerk and Razorpay are configured: then everything is free, no sign-in. */
+  enabled: boolean;
+  signedIn: boolean;
+  member: boolean;
+  /** Free checks left, or null for members, signed-out visitors, and when payments are off. */
+  freeLeft: number | null;
+  freeChecks: number;
+  price: string;
 };
 
 /** Response of POST /api/check: a simulated, unsent transaction. */

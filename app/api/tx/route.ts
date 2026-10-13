@@ -6,6 +6,7 @@ import { TxModelSchema, type ApiError, type ApiErrorCode } from "@/lib/tx/model"
 import type { TxResponse } from "@/lib/api";
 import { deterministicStoryboard } from "@/lib/storyboard/deterministic";
 import { voiceUrl } from "@/lib/voice/sign";
+import { blocked, checkKey, decide, readAccess, recordUse, shareTag, validShareTag } from "@/lib/membership";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,13 +25,20 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  // Free checks: links shared from Docent carry a tag and never count.
+  const access = await readAccess();
+  const decision = decide(access, checkKey(sig), validShareTag(sig, req.nextUrl.searchParams.get("s")));
+  if (!decision.allowed) return blocked(decision.reason);
+
   try {
     const tx = await fetchParsedTransaction(sig);
     const model = TxModelSchema.parse(normalizeTransaction(sig, tx));
     const storyboard = deterministicStoryboard(model);
     const urls = storyboard.scenes.map((s) => voiceUrl(s.caption));
     const voice = urls.every((u): u is string => u !== null) ? urls : null;
-    return NextResponse.json<TxResponse>({ tx: model, storyboard, voice });
+    const res = NextResponse.json<TxResponse>({ tx: model, storyboard, voice, shareTag: shareTag(sig) });
+    if (decision.record) await recordUse(access, decision.record);
+    return res;
   } catch (err) {
     if (err instanceof TxFetchError) return errorResponse(err.code, err.message, err.status);
     console.error("[/api/tx]", err);

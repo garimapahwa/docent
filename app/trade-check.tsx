@@ -34,19 +34,19 @@ function explanation(check: Extract<TradeCheck, { status: "checked" }>): string 
 }
 
 /** "Was this a good trade?": the swap's price compared with the market price at that minute. */
-export function TradeCheckCard({ signature }: { signature: string }) {
+export function TradeCheckCard({ signature, shareTag }: { signature: string; shareTag: string | null }) {
   const [check, setCheck] = useState<TradeCheck | "loading" | null>("loading");
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/trade-check?sig=${encodeURIComponent(signature)}`)
+    fetch(`/api/trade-check?sig=${encodeURIComponent(signature)}${shareTag ? `&s=${encodeURIComponent(shareTag)}` : ""}`)
       .then((r) => (r.ok ? (r.json() as Promise<TradeCheck>) : null))
       .catch(() => null)
       .then((c) => !cancelled && setCheck(c));
     return () => {
       cancelled = true;
     };
-  }, [signature]);
+  }, [signature, shareTag]);
 
   if (check === null || (check !== "loading" && check.status === "not_a_swap")) return null;
 

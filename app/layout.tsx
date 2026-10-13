@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
+import { DocentAnalytics } from "./analytics";
+import { AUTH_ENABLED } from "@/lib/auth-config";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -20,7 +23,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="min-h-screen font-sans antialiased">{children}</body>
+      <body className="min-h-screen font-sans antialiased">
+        {/* Accounts are optional: without Clerk's keys Docent runs fully open, no sign-in. */}
+        {AUTH_ENABLED ? <ClerkProvider appearance={{ variables: { colorPrimary: "#9945FF" } }}>{children}</ClerkProvider> : children}
+        <DocentAnalytics />
+      </body>
     </html>
   );
 }

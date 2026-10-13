@@ -1,16 +1,19 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { shortAddress } from "@/lib/format";
 import { explainTransaction } from "@/lib/tx/explain";
 import { ApiErrorSchema, type TxModel } from "@/lib/tx/model";
-import type { CheckResponse, TxResponse, WalletTx } from "@/lib/api";
+import type { CheckResponse, MembershipStatus, TxResponse, WalletTx } from "@/lib/api";
 import { isValidAddress, isValidSignature } from "@/lib/solana/signature";
 import { riskWarnings } from "@/lib/tx/risk";
 import { CheckResult } from "./check-result";
 import { Explained, Glossary } from "./glossary";
 import { Steps, Warnings } from "./steps";
+import { AccountButton, SignInGate } from "./auth";
+import { MembershipHint, Paywall, fetchMembership } from "./membership";
+import { SupportButton, SupportNudge } from "./support";
 import { ThemeToggle } from "./theme-toggle";
 import { TradeCheckCard } from "./trade-check";
 
@@ -26,14 +29,27 @@ type State =
   | { status: "error"; message: string; attempt: number }
   | { status: "picking"; address: string; transactions: WalletTx[] }
   | { status: "done"; data: TxResponse }
-  | { status: "checked"; data: CheckResponse };
+  | { status: "checked"; data: CheckResponse }
+  /** Free checks used up; `retry` runs the check again once they become a member. */
+  | { status: "paywall"; retry: () => void }
+  /** The check needs an account; `retry` runs it once they've signed in. */
+  | { status: "signin"; retry: () => void };
 
 /** Anything much longer than a signature (88 characters at most) is a whole transaction to check. */
 const looksLikeTransaction = (input: string) => input.length > 100 && !isValidSignature(input);
 
-/** Shareable path for an explained transaction or wallet. */
-function sharePath(input: string, isWallet: boolean): string {
-  return `/${isWallet ? "address" : "tx"}/${encodeURIComponent(input)}`;
+/**
+ * Shareable path for an explained transaction or wallet. `tag` (from the server) marks a link
+ * shared from Docent, so opening it never uses one of the viewer's free checks.
+ */
+function sharePath(input: string, isWallet: boolean, tag?: string | null): string {
+  return `/${isWallet ? "address" : "tx"}/${encodeURIComponent(input)}${tag ? `?s=${encodeURIComponent(tag)}` : ""}`;
+}
+
+/** "paywall" or "signin" when the server blocked a check, otherwise null. */
+function blockedBy(body: unknown): "paywall" | "signin" | null {
+  const code = ApiErrorSchema.safeParse(body).data?.error.code;
+  return code === "payment_required" ? "paywall" : code === "sign_in_required" ? "signin" : null;
 }
 
 /**
@@ -44,15 +60,24 @@ export default function Explorer({ initialInput }: { initialInput?: string }) {
   const [signature, setSignature] = useState(initialInput ?? "");
   const [state, setState] = useState<State>({ status: "idle" });
 
+  const [membership, setMembership] = useState<MembershipStatus | null>(null);
+  const refreshMembership = useCallback(() => {
+    fetchMembership().then(setMembership);
+  }, []);
+  useEffect(() => {
+    refreshMembership();
+  }, [refreshMembership]);
+
   const started = useRef(false);
   useEffect(() => {
     if (!initialInput || started.current) return;
     started.current = true;
-    explain(initialInput);
+    // A link shared from Docent carries ?s=<tag>, which keeps it free to open.
+    explain(initialInput, new URLSearchParams(window.location.search).get("s"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialInput]);
 
-  async function explain(input: string) {
+  async function explain(input: string, tag?: string | null) {
     if (!input) return;
     if (looksLikeTransaction(input)) return check(input);
     const isWallet = isValidAddress(input);
@@ -61,9 +86,16 @@ export default function Explorer({ initialInput }: { initialInput?: string }) {
       setState((s) => ({ status: "error", message, attempt: s.status === "error" ? s.attempt + 1 : 0 }));
     try {
       const res = await fetch(
-        isWallet ? `/api/recent?address=${encodeURIComponent(input)}` : `/api/tx?sig=${encodeURIComponent(input)}`,
+        isWallet
+          ? `/api/recent?address=${encodeURIComponent(input)}`
+          : `/api/tx?sig=${encodeURIComponent(input)}${tag ? `&s=${encodeURIComponent(tag)}` : ""}`,
       );
       const body: unknown = await res.json();
+      const block = blockedBy(body);
+      if (block) {
+        refreshMembership();
+        return setState({ status: block, retry: () => explain(input, tag) });
+      }
       if (!res.ok) {
         const parsed = ApiErrorSchema.safeParse(body);
         return fail(parsed.success ? parsed.data.error.message : `Request failed (${res.status}).`);
@@ -74,16 +106,17 @@ export default function Explorer({ initialInput }: { initialInput?: string }) {
         setState({ status: "picking", address: input, transactions });
       } else {
         setState({ status: "done", data: body as TxResponse });
+        refreshMembership();
       }
       // Keep the address bar shareable: it always points at what's on screen.
-      window.history.replaceState(null, "", sharePath(input, isWallet));
+      window.history.replaceState(null, "", sharePath(input, isWallet, isWallet ? null : (body as TxResponse).shareTag));
     } catch {
       fail("Couldn't reach the server. Check your connection and try again.");
     }
   }
 
   /** Dry-runs an unsigned transaction. Not shareable: it only exists in this browser. */
-  async function check(input: string) {
+  async function check(input: string, demo?: string | null) {
     setState({ status: "fetching", label: "Doing a dry run of this transaction (nothing gets sent)" });
     const fail = (message: string) =>
       setState((s) => ({ status: "error", message, attempt: s.status === "error" ? s.attempt + 1 : 0 }));
@@ -91,14 +124,20 @@ export default function Explorer({ initialInput }: { initialInput?: string }) {
       const res = await fetch("/api/check", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ transaction: input }),
+        body: JSON.stringify({ transaction: input, demo }),
       });
       const body: unknown = await res.json();
+      const block = blockedBy(body);
+      if (block) {
+        refreshMembership();
+        return setState({ status: block, retry: () => check(input, demo) });
+      }
       if (!res.ok) {
         const parsed = ApiErrorSchema.safeParse(body);
         return fail(parsed.success ? parsed.data.error.message : `Request failed (${res.status}).`);
       }
       setState({ status: "checked", data: body as CheckResponse });
+      refreshMembership();
       window.history.replaceState(null, "", "/");
     } catch {
       fail("Couldn't reach the server. Check your connection and try again.");
@@ -110,13 +149,13 @@ export default function Explorer({ initialInput }: { initialInput?: string }) {
     setState({ status: "fetching", label: kind === "swap" ? "Building an example swap" : "Building an example scam" });
     try {
       const res = await fetch(`/api/check/example?kind=${kind}`);
-      const body = (await res.json()) as { transaction?: string };
+      const body = (await res.json()) as { transaction?: string; demo?: string | null };
       if (!res.ok || !body.transaction) {
         const parsed = ApiErrorSchema.safeParse(body);
         throw new Error(parsed.success ? parsed.data.error.message : "Couldn't build the example.");
       }
       setSignature(body.transaction);
-      await check(body.transaction);
+      await check(body.transaction, body.demo);
     } catch (err) {
       setState({ status: "error", message: err instanceof Error ? err.message : "Couldn't build the example.", attempt: 0 });
     }
@@ -152,7 +191,11 @@ export default function Explorer({ initialInput }: { initialInput?: string }) {
         <a href="/" aria-label="Docent home" className="transition-colors hover:text-accent">
           docent<span className="blink text-accent">_</span>
         </a>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <SupportButton />
+          <ThemeToggle />
+          <AccountButton onChange={refreshMembership} />
+        </div>
       </nav>
 
       <section
@@ -226,7 +269,29 @@ export default function Explorer({ initialInput }: { initialInput?: string }) {
               </p>
             )}
           </div>
+          <MembershipHint status={membership} />
         </form>
+
+        {state.status === "signin" && (
+          <SignInGate
+            freeChecks={membership?.freeChecks ?? 2}
+            onSignedIn={() => {
+              refreshMembership();
+              state.retry();
+            }}
+          />
+        )}
+
+        {state.status === "paywall" && membership && (
+          <Paywall
+            price={membership.price}
+            freeChecks={membership.freeChecks}
+            onMember={() => {
+              refreshMembership();
+              state.retry();
+            }}
+          />
+        )}
 
         {state.status === "idle" && (
           <div className="rise flex flex-col gap-2 rounded-2xl border border-border p-5 text-sm" style={{ animationDelay: "120ms" }}>
@@ -321,7 +386,7 @@ function Result({ data }: { data: TxResponse }) {
         <Explained text={story.outcome} />
       </p>
 
-      <TradeCheckCard signature={model.signature} />
+      <TradeCheckCard signature={model.signature} shareTag={data.shareTag} />
 
       <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-4">
         {stats.map(([label, value], i) => (
@@ -333,7 +398,7 @@ function Result({ data }: { data: TxResponse }) {
       </dl>
 
       <div className="flex flex-wrap items-center gap-6 text-sm">
-        <CopyLink path={sharePath(model.signature, false)} />
+        <CopyLink path={sharePath(model.signature, false, data.shareTag)} />
         <button onClick={() => toggle("words")} className="text-accent transition-opacity hover:opacity-70">
           {panel === "words" ? "hide" : "what do these words mean?"}
         </button>
@@ -357,6 +422,8 @@ function Result({ data }: { data: TxResponse }) {
           {JSON.stringify(model, null, 2)}
         </pre>
       )}
+
+      <SupportNudge />
     </div>
   );
 }
